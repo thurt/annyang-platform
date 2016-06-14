@@ -1,0 +1,15 @@
+{
+  "name": "annyang-platform",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "serve": "live-server --port=8000 --https=https_config.js --no-browser"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "live-server": "^1.0.0"
+  },
+  "dependencies": {}
+}
