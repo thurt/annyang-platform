@@ -1,6 +1,23 @@
 const annyang = require('annyang')
 const StateMachine = require('./StateMachine')
 const Environment = require('./Environment')
+const data = {
+  letters: {
+     a: 0,
+     b: 0,
+     c: 0
+   },
+  clients: {
+     'Bob Jones': {},
+     'Greg Harmon': {},
+     'Leann Lewis': {},
+     'Harmony Chostwitz': {}
+   }
+}
+const commands = require('./Commands')(data)
+
+const StateCreator = require('./StateCreator')
+const FailStateCreator = require('./FailStateCreator')
 
 /////////////////////
 const $activateBtn = document.getElementById('activate')
@@ -36,32 +53,39 @@ for (var type in dom_events) {
 
 ///////////////////
 
+const myEnv = Environment(commands)
 
-const myEnv = Environment({
-  letters: {
-     a: 0,
-     b: 0,
-     c: 0
-   },
-  clients: {
-     'Bob Jones': {},
-     'Greg Harmon': {},
-     'Leann Lewis': {},
-     'Harmony Chostwitz': {}
-   }
+const State = StateMachine.init(document.getElementById('content'))(StateCreator)({
+  vlogs: JSON.stringify(data.vlogs),
+  clogs: JSON.stringify(data.clogs)
 })
 
-const mySM = StateMachine.init(document.getElementById('content'))(myEnv.stateCreator)({
-  vlogs: '',
-  clogs: ''
-})
+const ErrState = StateMachine.init(document.getElementById('err'))(FailStateCreator)({})
 
 annyang.addCommands(myEnv.commands)
 
+myEnv.subscribeSuccess(State.change)
+myEnv.subscribeFail(ErrState.change)
 
-// these are related to visual/DOM manipulation
-const StateMachine = [
-  ['increase :letter', State.change()],
-  ['client :first :last', State.change()],
-  ['show commands', State.change()]
-]
+const Generator = {
+  //:: (a -> b) -> (Generator ([a] -> b))
+  /* returns a generator which will apply
+     action to ea value sequentially in xs
+   */
+  seq(action) {
+    return function* applyAction(xs) {
+      for (var x of xs) {
+        yield action(x)
+      }
+    }
+  },
+  //:: Generator -> _
+  /* automatically steps generator every ~x ms
+     until the generator is exhausted
+   */
+  auto: (ms) => (gen) => {
+    if (!gen.next().done) {
+      setTimeout(() => Generator.auto(ms)(gen), ms)
+    }
+  }
+}
