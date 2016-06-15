@@ -2,7 +2,7 @@
 <html>
   <meta charset="UTF-8">
   <head>
-    <title>Telly</title>
+    <title>annyang-platform</title>
     <style type="text/css">
       html, body, p {
         font-size: xx-large !important;
@@ -17,101 +17,10 @@
         word-wrap: break-word;
       }
     </style>
+    <script src="bundle.js"></script>
   </head>
   <body>
     <button id="activate">Start</button>
-    <div id="content">
-      <div id="vlog"></div>
-      <div id="clog"></div>
-    </div>
-    
-    <script src="//cdnjs.cloudflare.com/ajax/libs/annyang/2.4.0/annyang.min.js"></script>
-    <script>
-    /* global annyang, SpeechKITT */
-
-    const env = ($clog, $vlog, $activate, data) => {
-      const DOMevents = {
-        '#activate': {
-          type: 'click',
-          callback: function(e) {
-            annyang.start({ autoRestart: false, continuous: true })
-          }
-        }
-      }
-      
-      const callbacks = {
-        'start': () => {
-          $vlog.textContent += 'Started\n'
-          $activate.disabled = true
-          $activate.textContent = 'Listening'
-        },
-        'result': (result) => {
-          $vlog.textContent = result
-        },
-        'end': () => {
-          $vlog.textContent += 'End\n'
-          $activate.disabled = false
-          $activate.textContent = 'Start'
-        }
-      }
-      
-      const commands = {
-        'increase :letter': {
-          regexp: /^increase (\w)$/, 
-          callback: (letter) => {
-            letter = letter.toLowerCase()
-            if (data.letters[letter] !== undefined) {
-              data.letters[letter]++
-              var span = document.createElement('span')
-              span.textContent = `increased ${letter} to ${data.letters[letter]}. ${JSON.stringify(data.letters)} \n`
-              $clog.appendChild(span)
-            } 
-          }
-        },
-        'client :first :last': function(first, last) {
-          const name = `${first} ${last}`
-          var span = document.createElement('span')
-          if (data.clients[name] !== undefined) {
-            span.textContent = `found ${name}\n`
-          } else {
-            span.textContent = `no ${name}\n`
-          }
-          $clog.appendChild(span)
-        },
-        'show commands': function() {
-          const span = document.createElement('span')
-          span.textContent += Reflect.ownKeys(commands).join(', ') + '\n'
-          $clog.appendChild(span)
-        }
-      }
-      
-      return { DOMevents, callbacks, commands }
-    }
-    
-    if (annyang) {
-      const myEnv = env(
-        document.getElementById('vlog'), 
-        document.getElementById('clog'),
-        document.getElementById('activate'), {
-          letters: { a: 0, b: 0, c: 0 },
-          clients: {
-            'Bob Jones': {}, 
-            'Greg Harmon': {}, 
-            'Leann Lewis': {}, 
-            'Harmony Chostwitz': {}
-          }
-      })
-      
-      annyang.addCommands(myEnv.commands)
-      for (var cb in myEnv.callbacks) {
-        annyang.addCallback(cb, myEnv.callbacks[cb])
-      }
-      for (var id in myEnv.DOMevents) {
-        var event = myEnv.DOMevents[id]
-        document.querySelector(id).addEventListener(event.type, event.callback)
-      }
-    }
-    </script>
     
   </body>
 </html>
