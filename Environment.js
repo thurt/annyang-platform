@@ -1,11 +1,15 @@
 const channelSuccess = []
 const channelFail = []
 
+const objectValues = (obj) => {
+  return Reflect.ownKeys(obj).map(key => obj[key])
+}
+
 const init = (commands) => {
-  for (var cmd in commands) {
-    cmd.callback = wrapper({ callback: cmd.callback, success: cmd.success, fail: cmd.fail })
-    delete cmd.success
-    delete cmd.fail
+  for (var c of objectValues(commands)) {
+    c.callback = wrapper({ callback: c.callback, success: c.success, fail: c.fail })
+    delete c.success
+    delete c.fail
   }
   
  return {

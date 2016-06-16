@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "serve": "live-server --port=8000 --https=https_config.js --no-browser",
-    "build": "watchify platform.js -o bundle.js"
+    "serve": "live-server --port=8000 --https=https_config.js --no-browser --wait=5000",
+    "build": "watchify --debug platform.js -o bundle.js"
   },
   "author": "",
   "license": "ISC",

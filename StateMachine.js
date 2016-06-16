@@ -7,7 +7,7 @@ const patch = snabbdom.init([ // Init patch function with choosen modules
 ])
 
 const init = (parentNode) => (StateCreator) => (init_params) => {
-  const vtree = parentNode
+  var vtree = parentNode
   const states = []
   
   // cursor stores the index of the currently rendered state

@@ -12,20 +12,28 @@ const data = {
      'Greg Harmon': {},
      'Leann Lewis': {},
      'Harmony Chostwitz': {}
-   }
+   },
+   vlogs: [],
+   clogs: []
 }
-const commands = require('./Commands')(data)
+const commands = require('./Commands')
 
 const StateCreator = require('./StateCreator')
 const FailStateCreator = require('./FailStateCreator')
 
 /////////////////////
-const $activateBtn = document.getElementById('activate')
+const $activateBtn = document.getElementById('activate-btn')
+const $showCommandsBtn = document.getElementById('show-commands-btn')
 const dom_events = {
   'click': [{
     element: $activateBtn,
     callback: function(_) {
       annyang.start({ autoRestart: false, continuous: true })
+    }
+  }, {
+    element: $showCommandsBtn,
+    callback: function(_) {
+      annyang.trigger('increase a')
     }
   }]
 }
@@ -35,6 +43,10 @@ const annyang_callbacks = {
    $activateBtn.textContent = 'Listening'
  },
  'result': (result) => {
+   console.log(result)
+ },
+ 'resultMatch': (result) => {
+   console.log(result)
  },
  'end': () => {
    $activateBtn.disabled = false
@@ -46,46 +58,42 @@ for (var cb in annyang_callbacks) {
   annyang.addCallback(cb, annyang_callbacks[cb])
 }
 for (var type in dom_events) {
-  type.forEach(event => {
+  dom_events[type].forEach(event => {
     event.element.addEventListener(type, event.callback)
   })
 }
 
-///////////////////
+/////////////////// 
 
-const myEnv = Environment(commands)
-
+const myEnv = Environment(commands(data))
+global.myEnv = myEnv
 const State = StateMachine.init(document.getElementById('content'))(StateCreator)({
-  vlogs: JSON.stringify(data.vlogs),
-  clogs: JSON.stringify(data.clogs)
+  vlogs: data.vlogs,
+  clogs: data.clogs
 })
 
-const ErrState = StateMachine.init(document.getElementById('err'))(FailStateCreator)({})
+const ErrState = StateMachine.init(document.getElementById('err'))(FailStateCreator)({
+  errMsg: 'Poo'
+})
+
+const StateChange = (_) => {
+  var new_state = myEnv.channelFail.shift()
+  
+  if (new_state === undefined) {
+    
+    new_state = myEnv.channelSuccess.shift()
+    if (new_state !== undefined) { 
+      State.change(new_state, { replace: new_state.replace }) 
+    }
+    
+  } else {
+    ErrState.change(new_state)
+  }
+  
+  window.requestAnimationFrame(StateChange)
+}
+
 
 annyang.addCommands(myEnv.commands)
 
-myEnv.subscribeSuccess(State.change)
-myEnv.subscribeFail(ErrState.change)
-
-const Generator = {
-  //:: (a -> b) -> (Generator ([a] -> b))
-  /* returns a generator which will apply
-     action to ea value sequentially in xs
-   */
-  seq(action) {
-    return function* applyAction(xs) {
-      for (var x of xs) {
-        yield action(x)
-      }
-    }
-  },
-  //:: Generator -> _
-  /* automatically steps generator every ~x ms
-     until the generator is exhausted
-   */
-  auto: (ms) => (gen) => {
-    if (!gen.next().done) {
-      setTimeout(() => Generator.auto(ms)(gen), ms)
-    }
-  }
-}
+window.requestAnimationFrame(StateChange)

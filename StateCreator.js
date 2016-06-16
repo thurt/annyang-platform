@@ -5,10 +5,9 @@ const StateCreator = ({
   clogs
 }) => {
   return h('div#content', [
-      h('div#vlog', vlogs),
-      h('div#clog', clogs)
+      h('div#vlog', [vlogs.join('\n')]),
+      h('div#clog', [clogs.join('\n')])
     ])
-  ])
 }
 
 
