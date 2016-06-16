@@ -4,24 +4,44 @@
   <head>
     <title>annyang-platform</title>
     <style type="text/css">
-      html, body, p {
+      html, body {
         font-size: xx-large !important;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      
+      body {
+        display: flex;
+        flex-direction: column;
+        
+      }
+      
+      #header {
+        flex-grow: 0;
       }
       
       #content {
-        display: flex;
-        flex-direction: column;
+        outline: 1px solid black;
+        flex-grow: 1;
+        overflow-y: scroll;
       }
       
       #clog {
-        word-wrap: break-word;
+
+      }
+      
+      #clog span {
+        display: block;
       }
     </style>
   </head>
   <body>
-    <button id="activate-btn">Start</button>
-    <button id="show-commands-btn">show commands</button>
-    <div id="err"></div>
+    <div id="header">
+      <button id="activate-btn">Start</button>
+      <button id="show-commands-btn">show commands</button>
+      <div id="err"></div>
+    </div>
     <div id="content"></div>
     <script src="bundle.js"></script>
   </body>

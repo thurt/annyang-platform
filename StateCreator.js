@@ -1,12 +1,13 @@
 const h = require('snabbdom/h')
 
 const StateCreator = ({
-  vlogs,
   clogs
 }) => {
+  while (clogs.length > 30) {
+    clogs.shift()
+  }
   return h('div#content', [
-      h('div#vlog', [vlogs.join('\n')]),
-      h('div#clog', [clogs.join('\n')])
+      h('div#clog', clogs.map(log => h('span', [log])))
     ])
 }
 

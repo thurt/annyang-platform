@@ -6,10 +6,17 @@ const objectValues = (obj) => {
 }
 
 const init = (commands) => {
-  for (var c of objectValues(commands)) {
-    c.callback = wrapper({ callback: c.callback, success: c.success, fail: c.fail })
-    delete c.success
-    delete c.fail
+  for (var c in commands) {
+    var cObj = commands[c]
+    var wrapped = wrapper({ callback: cObj.callback, success: cObj.success, fail: cObj.fail }) 
+    
+    if (cObj.regexp === undefined) {
+      commands[c] = wrapped 
+    } else {
+      cObj.callback = wrapped
+      delete cObj.success
+      delete cObj.fail
+    }
   }
   
  return {
@@ -22,7 +29,7 @@ const wrapper = ({ callback, success, fail }) => (...args) => {
   
   outcome === true
     ? channelSuccess.push(success(...args))
-    : channelFail.push(outcome)
+    : channelFail.push(fail(...args))
 }
 
 module.exports = init

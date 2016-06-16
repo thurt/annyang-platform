@@ -43,10 +43,10 @@ const annyang_callbacks = {
    $activateBtn.textContent = 'Listening'
  },
  'result': (result) => {
-   console.log(result)
+   //console.log(result)
  },
  'resultMatch': (result) => {
-   console.log(result)
+   //console.log(result)
  },
  'end': () => {
    $activateBtn.disabled = false
@@ -83,11 +83,11 @@ const StateChange = (_) => {
     
     new_state = myEnv.channelSuccess.shift()
     if (new_state !== undefined) { 
-      State.change(new_state, { replace: new_state.replace }) 
+      State.change(new_state, { replace: false }) 
     }
     
   } else {
-    ErrState.change(new_state)
+    ErrState.change(new_state, { replace: false })
   }
   
   window.requestAnimationFrame(StateChange)
