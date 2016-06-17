@@ -1,35 +1,14 @@
-const channelSuccess = []
-const channelFail = []
-
-const objectValues = (obj) => {
-  return Reflect.ownKeys(obj).map(key => obj[key])
-}
+const channel = []
 
 const init = (commands) => {
-  for (var c in commands) {
-    var cObj = commands[c]
-    var wrapped = wrapper({ callback: cObj.callback, success: cObj.success, fail: cObj.fail }) 
-    
-    if (cObj.regexp === undefined) {
-      commands[c] = wrapped 
-    } else {
-      cObj.callback = wrapped
-      delete cObj.success
-      delete cObj.fail
-    }
+  for (var name in commands) {
+    commands[name] = wrapper(commands[name])
   }
-  
- return {
-   commands, channelSuccess, channelFail
- }
+  return { commands, channel }
 }
 
-const wrapper = ({ callback, success, fail }) => (...args) => {
-  const outcome = callback(...args)
-  
-  outcome === true
-    ? channelSuccess.push(success(...args))
-    : channelFail.push(fail(...args))
+const wrapper = (callback) => (...args) => {
+  channel.push(callback(...args))
 }
 
-module.exports = init
+module.exports = { init }

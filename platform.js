@@ -17,9 +17,9 @@ const data = {
    clogs: []
 }
 const commands = require('./Commands')
+const { Either } = require('fp-lib')
 
 const StateCreator = require('./StateCreator')
-const FailStateCreator = require('./FailStateCreator')
 
 /////////////////////
 const $activateBtn = document.getElementById('activate-btn')
@@ -65,31 +65,29 @@ for (var type in dom_events) {
 
 /////////////////// 
 
-const myEnv = Environment(commands(data))
+const myEnv = Environment.init(commands(data))
 global.myEnv = myEnv
+
 const State = StateMachine.init(document.getElementById('content'))(StateCreator)({
-  vlogs: data.vlogs,
+  errMsg: 'Poo',
   clogs: data.clogs
 })
 
-const ErrState = StateMachine.init(document.getElementById('err'))(FailStateCreator)({
-  errMsg: 'Poo'
-})
-
 const StateChange = (_) => {
-  var new_state = myEnv.channelFail.shift()
+  const either_state = myEnv.channel.shift()
   
-  if (new_state === undefined) {
-    
-    new_state = myEnv.channelSuccess.shift()
-    if (new_state !== undefined) { 
-      State.change(new_state, { replace: false }) 
-    }
-    
-  } else {
-    ErrState.change(new_state, { replace: false })
+  if (either_state !== undefined) { 
+    // pass internal either value to State.change
+    Either.bimap
+      (err_state => { // same behavior for error state
+        State.change(err_state, { replace: false }) 
+      })
+      (state => { 
+        State.change(state, { replace: false }) 
+      })
+      (either_state) 
   }
-  
+    
   window.requestAnimationFrame(StateChange)
 }
 
