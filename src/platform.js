@@ -1,4 +1,6 @@
+/*global Horizon*/
 const annyang = require('annyang')
+
 const StateMachine = require('./StateMachine')
 const Environment = require('./Environment')
 const data = {
@@ -18,22 +20,36 @@ const data = {
 }
 const commands = require('./Commands')
 const { Either } = require('fp-lib')
-
 const StateCreator = require('./StateCreator')
 
+const horizon = Horizon()
+horizon.status(status => {
+  document.getElementById('header').className = `status-${status.type}`
+  if (status === 'disconnected') {
+    
+  }
+})
+horizon.connect()
+
+annyang.debug()
 /////////////////////
+const myEnv = Environment.init(commands(data))
+global.myEnv = myEnv
+global.horizon = horizon
+global.annyang = annyang
+
 const $activateBtn = document.getElementById('activate-btn')
 const $showCommandsBtn = document.getElementById('show-commands-btn')
 const dom_events = {
   'click': [{
     element: $activateBtn,
     callback: function(_) {
-      annyang.start({ autoRestart: false, continuous: true })
+      annyang.start({ autoRestart: false, continuous: false })
     }
   }, {
     element: $showCommandsBtn,
     callback: function(_) {
-      annyang.trigger('increase a')
+      annyang.trigger('show commands')
     }
   }]
 }
@@ -47,6 +63,10 @@ const annyang_callbacks = {
  },
  'resultMatch': (result) => {
    //console.log(result)
+ },
+ 'resultNoMatch': (result) => {
+   console.log(result)
+   myEnv.channel.push(Either.Left({ errMsg: `No match for ${result}` }))
  },
  'end': () => {
    $activateBtn.disabled = false
@@ -65,8 +85,7 @@ for (var type in dom_events) {
 
 /////////////////// 
 
-const myEnv = Environment.init(commands(data))
-global.myEnv = myEnv
+
 
 const State = StateMachine.init(document.getElementById('content'))(StateCreator)({
   errMsg: 'Poo',

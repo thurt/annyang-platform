@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html>
   <meta charset="UTF-8">
+  <script src="/horizon/horizon.js"></script>
   <head>
     <title>annyang-platform</title>
     <style type="text/css">
       html, body {
-        font-size: xx-large !important;
         height: 100%;
         margin: 0;
         padding: 0;
+        font-size: xx-large !important;
       }
       
       body {
@@ -16,8 +17,28 @@
         flex-direction: column;
       }
       
+      button {
+        font-size: xx-large;
+      }
+      
       #header {
         flex-grow: 0;
+      }
+      
+      .status-unconnected {
+        background-color: yellow;
+      }
+      
+      .status-ready {
+        background-color: green;
+      }
+      
+      .status-error {
+        background-color: red;
+      }
+      
+      .status-disconnected {
+        background-color: red;
       }
       
       #content {

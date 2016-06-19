@@ -5,19 +5,20 @@
   "main": "index.js",
   "scripts": {
     "serve": "live-server --port=8000 --https=https_config.js --no-browser --wait=5000",
-    "build": "watchify --debug platform.js -o bundle.js"
+    "build": "watchify --debug src/platform.js -o dist/bundle.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "browserify": "^13.0.1",
     "live-server": "^1.0.0",
+    "rethinkdb-fixtures": "0.0.5",
     "watchify": "^3.7.0"
   },
   "dependencies": {
     "annyang": "^2.4.0",
     "fp-lib": "github:thurt/fp-lib",
-    "localforage": "^1.4.2",
+    "fuzzyset.js": "0.0.1",
     "snabbdom": "^0.5.0"
   }
 }
