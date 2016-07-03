@@ -8,8 +8,8 @@ const StateCreator = ({
     clogs.shift()
   }
   return h('div#content', [
-      h('div#err', [errMsg]),
-      h('div#clog', clogs.map(log => h('span', [log])))
+      h('div#err', [errMsg||'']),
+      h('div#clog', clogs ? clogs.map(log => h('span', [log])) : '')
     ])
 }
 

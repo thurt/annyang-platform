@@ -8,47 +8,18 @@ const patch = snabbdom.init([ // Init patch function with choosen modules
 
 const init = (parentNode) => (StateCreator) => (init_params) => {
   var _vtree = parentNode
-  const _states = []
-  
-  // cursor stores the index of the currently rendered state
-  // it moves back and forward for undo/redo operations
-  const i = 0
-  
-  // replace must be true for first state change
-  const change = (state, { replace }) => {
-    if (!replace) {
-      state = Object.assign(Object.assign({}, _states[i]), state)
-    }
+
+  const change = (state) => {
 
     const new_vtree = StateCreator(state)
-    
-    // remove all state parameters in front of cursor position
-    if (i !== 0) {
-      _states.splice(0, i)
-      i = 0
-    }
-    _states.unshift(state)
     
     patch(_vtree, new_vtree)
     _vtree = new_vtree
   }
   
-  const undo = () => {
-    return (i < states.length - 1)
-      ? (change(states[++i], { replace: true }), true)
-      : false
-  }
+  change(init_params)
   
-  const redo = () => {
-    return (i > 0)
-      ? (change(states[--i], { replace: true }), true)
-      : false
-  }
-  
-  // replace must be true for first state change
-  change(init_params, { replace: true })
-  
-  return { change, undo, redo }
+  return { change }
 }
 
 module.exports = { init }

@@ -48,8 +48,8 @@ auto_create_index = true
 # 'connect' will connect to an existing RethinkDB instance
 # 'start_rethinkdb' will run an internal RethinkDB instance
 #------------------------------------------------------------------------------
-connect = "localhost:28015"
-#start_rethinkdb = true
+#connect = "localhost:28015"
+start_rethinkdb = true
 
 
 ###############################################################################
@@ -68,8 +68,9 @@ debug = true
 # 'allow_unauthenticated' allows connections that are not tied to a user id
 # 'auth_redirect' specifies where users will be redirected to after login
 #------------------------------------------------------------------------------
+permissions = false
 token_secret = "kana/HQoe/jHGUWypQHsQTcnq8V4NKYLabQG3/FK3DkkaBvn3IRAk12WZvt4+8NcOdBuW4eT/IojqtZatYyzZw=="
-allow_anonymous = true
+#allow_anonymous = true
 allow_unauthenticated = true
 # auth_redirect = "/"
 #
