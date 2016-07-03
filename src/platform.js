@@ -4,15 +4,6 @@ const env = require('./annyangEnv')
 const StateMachine = require('./StateMachine')
 const StateChange = require('./StateChange')
 const StateCreator = require('./StateCreator')
-const data = {
-  clients: {
-     'Bob Jones': {},
-     'Greg Harmon': {},
-     'Leann Lewis': {},
-     'Harmony Chostwitz': {}
-   },
-   clogs: []
-}
 
 const horizon = Horizon()
 horizon.status(status => {
@@ -22,7 +13,8 @@ horizon.connect()
 
 
 /////////////////////
-const myCommands = env.commands(data)(horizon)
+
+const myCommands = env.commands({})(horizon)(env.channel)
 global.myCommands = myCommands
 global.horizon = horizon
 global.annyang = env.annyang
@@ -38,11 +30,7 @@ for (var type in env.dom_events) {
 
 /////////////////// 
 
-const myState = StateMachine.init(document.getElementById('content'))(StateCreator)({
-  errMsg: 'Poo',
-  clogs: data.clogs
-})
-
+const myState = StateMachine.init(document.getElementById('content'))(StateCreator)({})
 
 const myStateChange = StateChange(env.channel)(myState)
 

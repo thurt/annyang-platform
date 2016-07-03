@@ -6,11 +6,11 @@ const StateChange = (channel) => (State) => (_) => {
   if (either_state !== undefined) { 
     // pass internal either value to State.change
     Either.bimap
-      (err_state => { // same behavior for error state
-        State.change(err_state) 
+      (msgs => { // currently, it is same behavior for error state
+        State.change({ logs: msgs }) 
       })
-      (state => { 
-        State.change(state) 
+      (msgs => { 
+        State.change({ logs: msgs }) 
       })
       (either_state) 
   }
