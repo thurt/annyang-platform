@@ -1,48 +1,62 @@
 /*global Horizon*/
+const horizon = Horizon()
 const annyang = require('annyang')
 const env = require('./annyangEnv')
 const channel = []
 
-const StateChange = require('./StateChange')
-const StateMachine = require('./StateMachine')
-const StateCreator = require('./StateCreator')
-
-const horizon = Horizon()
-horizon.status(status => {
-  document.getElementById('header').className = `status-${status.type}`
-})
 horizon.connect()
+annyang.debug()
 
 /////////////////////
 
-global.horizon = horizon
-global.annyang =annyang
-
-for (var cb in env.callbacks) {
-  annyang.addCallback(cb, env.callbacks[cb])
-}
-for (var type in env.dom_events) {
-  env.dom_events[type].forEach(event => {
-    event.element.addEventListener(type, event.callback)
+// Setup horizon status indicator
+{
+  const $header = document.getElementById('header')
+  horizon.status(status => {
+    $header.className = `status-${status.type}`
   })
 }
 
+/////////////////////
+
+// Setup annyang callbacks and dom events
+{
+  const $activateBtn = document.getElementById('activate-btn')
+  const $showCommandsBtn = document.getElementById('show-commands-btn')
+  
+  const myCallbacks = env.callbacks({ $activateBtn })(channel)
+  const myDomEvents = env.dom_events({ $activateBtn, $showCommandsBtn })(annyang)
+  
+  for (var cb in myCallbacks) {
+    annyang.addCallback(cb, myCallbacks[cb])
+  }
+  for (var type in myDomEvents) {
+    myDomEvents[type].forEach(event => {
+      event.element.addEventListener(type, event.callback)
+    })
+  }
+}
+
 /////////////////// 
 
-annyang.debug()
-
-annyang.addCommands(
-  env.commands({})
-    (horizon)
-    (channel)
-)
-
-window.requestAnimationFrame(
-  StateChange
-    (channel)
-    (StateMachine.init(document.getElementById('content'))(StateCreator)({ logs: [] }))
-)
+// Setup annyang commands
+{
+  const myCommands = env.commands(horizon)(channel)
+  annyang.addCommands(myCommands)
+}
 
 /////////////////// 
 
-module.exports = channel
+// Setup state machine
+{
+  const StateChange = require('./StateChange')
+  const StateMachine = require('./StateMachine')
+  const StateCreator = require('./StateCreator')
+  const $contentSpace = document.getElementById('content')
+  const myStateMachine = StateMachine.init($contentSpace)(StateCreator)({ logs: [] })
+  const myStateChange = StateChange(myStateMachine)(channel)
+  
+  window.requestAnimationFrame(myStateChange)
+}
+
+/////////////////// 

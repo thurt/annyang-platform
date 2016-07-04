@@ -7,12 +7,10 @@ const patch = snabbdom.init([ // Init patch function with choosen modules
 ])
 
 const init = (parentNode) => (StateCreator) => (init_params) => {
-  var _vtree = parentNode
+  let _vtree = parentNode
 
   const change = (state) => {
-
     const new_vtree = StateCreator(state)
-    
     patch(_vtree, new_vtree)
     _vtree = new_vtree
   }

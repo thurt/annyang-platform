@@ -1,6 +1,6 @@
 const { Either } = require('fp-lib')
 
-const StateChange = (channel) => (State) => (_) => {
+const StateChange = (State) => (channel) => (_) => {
   const either_state = channel.shift()
   
   if (either_state !== undefined) { 

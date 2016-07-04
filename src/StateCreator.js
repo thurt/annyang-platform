@@ -1,6 +1,6 @@
 const h = require('snabbdom/h')
-var _logs = []
-var _key = 0
+let _logs = []
+let _key = 0
 
 const myStyles = {
   fadeIn: {
@@ -23,9 +23,7 @@ const createLog = (log) => {
   ])
 }
 
-const StateCreator = ({
-  logs
-}) => {
+const StateCreator = ({ logs }) => {
   if (!Array.isArray(logs)) {
     logs = [logs]
   }
@@ -39,6 +37,5 @@ const StateCreator = ({
     h('div#logs', _logs)
   ])
 }
-
 
 module.exports = StateCreator
