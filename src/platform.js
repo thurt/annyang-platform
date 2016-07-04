@@ -1,8 +1,10 @@
 /*global Horizon*/
+const annyang = require('annyang')
 const env = require('./annyangEnv')
+const channel = []
 
-const StateMachine = require('./StateMachine')
 const StateChange = require('./StateChange')
+const StateMachine = require('./StateMachine')
 const StateCreator = require('./StateCreator')
 
 const horizon = Horizon()
@@ -11,16 +13,13 @@ horizon.status(status => {
 })
 horizon.connect()
 
-
 /////////////////////
 
-const myCommands = env.commands({})(horizon)(env.channel)
-global.myCommands = myCommands
 global.horizon = horizon
-global.annyang = env.annyang
+global.annyang =annyang
 
 for (var cb in env.callbacks) {
-  env.annyang.addCallback(cb, env.callbacks[cb])
+  annyang.addCallback(cb, env.callbacks[cb])
 }
 for (var type in env.dom_events) {
   env.dom_events[type].forEach(event => {
@@ -30,10 +29,20 @@ for (var type in env.dom_events) {
 
 /////////////////// 
 
-const myState = StateMachine.init(document.getElementById('content'))(StateCreator)({})
+annyang.debug()
 
-const myStateChange = StateChange(env.channel)(myState)
+annyang.addCommands(
+  env.commands({})
+    (horizon)
+    (channel)
+)
 
-env.annyang.addCommands(myCommands)
-env.annyang.debug()
-window.requestAnimationFrame(myStateChange)
+window.requestAnimationFrame(
+  StateChange
+    (channel)
+    (StateMachine.init(document.getElementById('content'))(StateCreator)({ logs: [] }))
+)
+
+/////////////////// 
+
+module.exports = channel

@@ -1,8 +1,9 @@
-const fuzzyset = require('fuzzyset.js')
+//const fuzzyset = require('fuzzyset.js')
 const { Either } = require('fp-lib')
+const { showCommands }= require('./_commandCreators')
 
 const commands = (data) => (horizon) => (channel) => {
-  const fuzzy_clients = fuzzyset(Object.keys(data.clients))
+  //const fuzzy_clients = fuzzyset(Object.keys(data.clients))
   const letters = horizon('letters')
 
   const _commands = {
@@ -31,7 +32,8 @@ const commands = (data) => (horizon) => (channel) => {
       })
     },
     'show commands': () => {
-      return Either.Right(Reflect.ownKeys(_commands).join(', '))
+      const result = showCommands(Reflect.ownKeys(_commands))
+      return Either.Right(result)
     }
   }
   

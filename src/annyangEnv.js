@@ -1,7 +1,7 @@
-const { pipe, Either } = require('fp-lib')
+const platform = require('./platform')
+const { Either } = require('fp-lib')
 const annyang = require('annyang')
 const commands = require('./internal/_commands')
-const channel = []
 
 const $activateBtn = document.getElementById('activate-btn')
 const $showCommandsBtn = document.getElementById('show-commands-btn')
@@ -32,7 +32,7 @@ const callbacks = {
    //console.log(result)
  },
  'resultNoMatch': (result) => {
-   channel.push(Either.Left({ errMsg: `No command matches for ${result[0]}` }))
+   platform.push(Either.Left({ errMsg: `No command matches for ${result[0]}` }))
  },
  'end': () => {
    $activateBtn.disabled = false
@@ -40,4 +40,4 @@ const callbacks = {
  }
 }
 
-module.exports = { annyang, dom_events, callbacks, commands, channel }
+module.exports = { annyang, dom_events, callbacks, commands }
