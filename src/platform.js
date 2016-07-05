@@ -39,10 +39,11 @@ annyang.debug()
 
 /////////////////// 
 
-// Setup annyang commands
+// Setup annyang command entry and manual command entry
 {
   const myCommands = env.commands(horizon)(channel)
   annyang.addCommands(myCommands)
+  env.manualCommandEntry(myCommands)(channel)
 }
 
 /////////////////// 

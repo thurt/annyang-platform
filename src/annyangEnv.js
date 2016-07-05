@@ -38,9 +38,9 @@ const callbacks = ({ $activateBtn }) => (channel) => {
   }
 }
 
-const commands = (horizon) => (channel) => {
+const commands = (horizon) => (channel) => (commandCreators) => {
   const { Either } = require('fp-lib')
-  const { showCommands } = require('./internal/_commandCreators')
+  const { showCommands } = commandCreators
   //const fuzzy_clients = fuzzyset(Object.keys(data.clients))
   const letters = horizon('letters')
 
@@ -86,43 +86,76 @@ const commands = (horizon) => (channel) => {
 }
 
 // needs work
-const command_variables_regex = new RegExp(/(:\w+|\*\w+)/, 'gi')
-const keyboardCommandEntry = (commands) => {
-  const getKeyboardInput = (name) => {
-    const input = window.prompt(name)
-    
-    if (input === '') {
-      return Either.Left(`Error: missing required input`)
-    } else {
-      const word_regex = new RegExp(/(\w+)/, 'gi')
-      const vars = name.match(command_variables_regex)
-      const inputs = input.match(word_regex)
-      
-      if (vars.length !== inputs.length) {
-        return Either.Left(`Error: Command requires exactly ${vars.length} inputs`)
-      } else {
-        let i = 0
-        const result = name.replace(command_variables_regex, (match) => inputs[i++])
-        annyang.trigger(result)  
-      }
-    }
-  }
 
-  const requiresUserInput = (name) =>  {
-    return command_variables_regex.test(name)
+const manualCommandEntry = (commands) => (channel) => {
+  const { Either } = require('fp-lib')
+  const err = {
+    0: (cmd) => `Can't complete [${cmd}]. Missing required input.`,
+    1: (cmd, len) => `Can't complete [${cmd}]. It requires exactly ${len} inputs.`
   }
-    
-  if (requiresUserInput(name)) {
-    const input = getKeyboardInput(name)
-    
-    Either.bimap
-      (left => { platform.push(left) })
-      (right => { annyang_trigger(right) })
-      (input)
+  const regx = {
+    0: new RegExp(/(:\w+|\*\w+)/, 'gi'), // command arguments
+    1: new RegExp(/(\w+)/, 'gi') // words
+  }
+  const pred = {
+    0: (x) => x === '',
+    1: (x, y) => x.length !== y.length
+  }
+  
+  //:: (String, String) -> Either err null
+  const hasInput = (x, cmd) => {
+    return (pred[0](x))
+      ? Either.Left(err[0](cmd))
+      : Either.Right(null)
+  }
+  
+  //:: (String, String) -> Either err null -> Either err String 
+  const hasCorrectNumberOfInputs = (x, cmd) => (_) => {
+    const args = cmd.match(regx[0])
+    const xs = x.match(regx[1])
+    let i = 0  
+    return (pred[1](xs, args))
+      ? Either.Left(err[1](cmd, args.length))
+      : Either.Right(cmd.replace(regx[0], (match) => xs[i++]))
+  }
+  
+  //:: String -> Either err String
+  const getUserInput = (cmd) => {
+    const x = window.prompt(cmd)
+    return hasInput(x, cmd).chain(hasCorrectNumberOfInputs(x, cmd))
+  }
+  
+  //:: String -> Bool
+  const requiresArguments = (cmd) =>  {
+    return regx[0].test(cmd)
+  }
+  
+  //:: String -> _  
+  return (cmd) => {
+    if (requiresArguments(cmd)) {
+      const result = getUserInput(cmd)
       
-  } else {
-    annyang_trigger(name)
+      Either.bimap
+        (left => { channel.push(result) })
+        (right => { commands[cmd](right) })
+        (result)
+        
+    } else {
+      commands[cmd]()
+    }
   }
 }
 
-module.exports = { dom_events, callbacks, commands, keyboardCommandEntry }
+const commandCreators = (manualCommandEntry) => {
+  const h = require('snabbdom/h')
+  
+  const showCommands = (names) => {
+    return [names.map(name => {
+      return h('button', { on: { click: [manualCommandEntry, name] } }, name)
+    })]
+  }
+  
+  module.exports = { showCommands }
+}
+
+module.exports = { dom_events, callbacks, commands, manualCommandEntry, commandCreators }
