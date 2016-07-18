@@ -1,19 +1,50 @@
 const commands = (horizon) => (manualCommandEntry) => (channel) => {
+  const fuzzyset = require('fuzzyset.js')
   const h = require('snabbdom/h')
-  const { Either } = require('fp-lib')
-  //const { showCommands } = commandCreators
-  //const fuzzy_clients = fuzzyset(Object.keys(data.clients))
+  const { Either, pluck } = require('fp-lib')
+  
   const letters = horizon('letters')
-
+  const clients = horizon('clients')
+  
+  let fuzzy_clients = fuzzyset([])
+  let fuzzy_addresses = fuzzyset([])
+  
+  clients.watch().subscribe(
+    (res) => { 
+      if (res.length === 0) {} 
+      else {
+        console.log('received update', res)
+        console.log(pluck('name')(res))
+        fuzzy_clients = fuzzyset(pluck('name')(res), false, 1)
+        //fuzzy_addresses = fuzzyset(pluck('address')(res))
+      }
+    },
+    (err) => console.error(`clients.watch(): ${err}`))
+  
   const _commands = {
     'client *name': (name) => {
       const res = fuzzy_clients.get(name)
 
       if (res !== null) {
-        return Either.Right(`fuzzy client found ${res}`)
+        channel.push(Either.Right(`fuzzy client found ${res}`))
       } else {
-        return Either.Left(`client ${name} not found by fuzzy`)
+        channel.push(Either.Left(`client ${name} not found by fuzzy`))
       }
+    },
+    'new client': () => {
+      const name = window.prompt(`Enter new client name`)
+      
+      if (fuzzy_clients.values().includes(name)) {
+        channel.push(Either.Left(`Error new client ${name} -- that name already exists`))
+      } else {
+        clients.store({ name }).subscribe(
+          (res) => channel.push(Either.Right(`Created new client ${name}`)),
+          (err) => channel.push(Either.Left(`Error new client ${name} -- ${err}`)))
+      }
+    },
+    [`what's nearby`]: () => {},
+    'client address *addr': (addr) => {
+            
     },
     'increase :letter': (letter) => {
       letters.find(letter.toLowerCase()).fetch().defaultIfEmpty().subscribe(
@@ -23,18 +54,15 @@ const commands = (horizon) => (manualCommandEntry) => (channel) => {
           } else {
             letters.replace({ id: letter, count: res.count + 1 }).subscribe(
               (id) => { 
-                console.log(id)
                 channel.push(Either.Right(`increased letter ${letter} to ${res.count}`)) 
               },
               (err) => { 
-                console.log(err)
                 channel.push(Either.Left(`Error on replace: increase letter ${letter} -- ${err} `))
               }
             )  
           }
         },
         (err) => {
-          console.log(err)
           channel.push(Either.Left(`Error on find: increase letter ${letter} -- ${err}`)) 
         }
       )
