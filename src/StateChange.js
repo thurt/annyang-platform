@@ -15,7 +15,7 @@ const StateChange = (State) => (channel) => (_) => {
       (either_state) 
   }
     
-  window.requestAnimationFrame(StateChange(channel)(State))
+  window.requestAnimationFrame(StateChange(State)(channel))
 }
 
 module.exports = StateChange

@@ -1,12 +1,11 @@
 /*global Horizon*/
 const horizon = Horizon()
 const annyang = require('annyang')
-const env = require('./annyangEnv')
 const channel = []
 
 horizon.connect()
 annyang.debug()
-
+global.annyang = annyang
 /////////////////////
 
 // Setup horizon status indicator
@@ -24,8 +23,8 @@ annyang.debug()
   const $activateBtn = document.getElementById('activate-btn')
   const $showCommandsBtn = document.getElementById('show-commands-btn')
   
-  const myCallbacks = env.callbacks({ $activateBtn })(channel)
-  const myDomEvents = env.dom_events({ $activateBtn, $showCommandsBtn })(annyang)
+  const myCallbacks = require('./Callbacks')({ $activateBtn })(channel)
+  const myDomEvents = require('./DomEvents')({ $activateBtn, $showCommandsBtn })(annyang)
   
   for (var cb in myCallbacks) {
     annyang.addCallback(cb, myCallbacks[cb])
@@ -41,23 +40,20 @@ annyang.debug()
 
 // Setup annyang command entry and manual command entry
 {
-  const myCommands = env.commands(horizon)(channel)
+  const myManualCommandEntry = require('./ManualCommandEntry')(annyang)(channel)
+  const myCommands = require('./Commands')(horizon)(myManualCommandEntry)(channel)
   annyang.addCommands(myCommands)
-  env.manualCommandEntry(myCommands)(channel)
+  global.myCommands = myCommands
 }
 
 /////////////////// 
 
 // Setup state machine
 {
-  const StateChange = require('./StateChange')
-  const StateMachine = require('./StateMachine')
-  const StateCreator = require('./StateCreator')
-  const $contentSpace = document.getElementById('content')
-  const myStateMachine = StateMachine.init($contentSpace)(StateCreator)({ logs: [] })
-  const myStateChange = StateChange(myStateMachine)(channel)
-  
-  window.requestAnimationFrame(myStateChange)
+const StateSystem = require('./StateSystem')
+const myStateChange = StateSystem(channel)
+
+window.requestAnimationFrame(myStateChange)
 }
 
 /////////////////// 
