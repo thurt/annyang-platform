@@ -3,8 +3,7 @@ const callbacks = ({ $activateBtn }) => (channel) => {
   
   return {
     'start': () => {
-      $activateBtn.disabled = true
-      $activateBtn.textContent = 'Listening'
+      //
     },
     'result': (result) => {
       //console.log(result)
@@ -16,7 +15,6 @@ const callbacks = ({ $activateBtn }) => (channel) => {
       channel.push(Either.Left(`No command matches for ${result[0]}`))
     },
     'end': () => {
-      $activateBtn.disabled = false
       $activateBtn.textContent = 'Start'
     }
   }

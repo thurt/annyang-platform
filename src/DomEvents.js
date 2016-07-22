@@ -3,7 +3,13 @@ const dom_events = ({ $activateBtn, $showCommandsBtn }) => (annyang) => {
     'click': [{
       element: $activateBtn,
       callback: function(_) {
-        annyang.start({ autoRestart: false, continuous: false })
+        if (annyang.isListening()) {
+          annyang.abort()
+          $activateBtn.textContent = 'Start'
+        } else {
+          annyang.start({ autoRestart: false, continuous: true })
+          $activateBtn.textContent = 'Stop'
+        }
       }
     }, {
       element: $showCommandsBtn,

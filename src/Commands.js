@@ -34,13 +34,26 @@ const commands = (horizon) => (manualCommandEntry) => (channel) => {
     'new client': () => {
       const name = window.prompt(`Enter new client name`)
       
-      if (fuzzy_clients.values().includes(name)) {
-        channel.push(Either.Left(`Error new client ${name} -- that name already exists`))
-      } else {
-        clients.store({ name }).subscribe(
-          (res) => channel.push(Either.Right(`Created new client ${name}`)),
-          (err) => channel.push(Either.Left(`Error new client ${name} -- ${err}`)))
+      if (name === null) { // cancelled
+        return
       }
+      
+      if (name === '') { // empty name
+        channel.push(Either.Left(`Error new client -- cannot create client with no name`))  
+        return
+      }
+      
+      clients.find({ name }).fetch().defaultIfEmpty().subscribe(
+        (msg) => {
+          if (msg === null) {
+            clients.store({ name }).subscribe(
+              (res) => channel.push(Either.Right(`Created new client ${name}`)),
+              (err) => channel.push(Either.Left(`Error new client ${name} -- ${err}`)))
+          } else {
+            channel.push(Either.Left(`Error new client ${name} -- that name already exists`))
+          }
+        }
+      )
     },
     [`what's nearby`]: () => {},
     'client address *addr': (addr) => {

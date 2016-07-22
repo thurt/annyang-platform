@@ -5,8 +5,10 @@ const manualCommandEntry = (annyang) => (channel) => {
     1: (cmd, len) => `Can't complete [${cmd}]. It requires exactly ${len} inputs.`
   }
   const regx = {
-    0: new RegExp(/(:\w+|\*\w+)/, 'gi'), // command arguments
-    1: new RegExp(/(\w+)/, 'gi') // words
+    0: new RegExp(/(:\w+|\*\w+)/, 'gi'), // has command arguments
+    1: new RegExp(/(:\w+)/, 'gi'), // command arg
+    2: new RegExp(/(\*\w+)/, 'gi'), // command splat
+    3: new RegExp(/(\w+)/, 'gi') // words
   }
   const pred = {
     0: (x) => x === '',
@@ -15,16 +17,31 @@ const manualCommandEntry = (annyang) => (channel) => {
   
   //:: (String, String) -> Either String null
   const hasInput = (x, cmd) => {
-    return (pred[0](x))
-      ? Either.Left(err[0](cmd))
-      : Either.Right(null)
+    let result = null
+    
+    if (pred[0](x)) {
+      result = Either.Left(err[0](cmd))
+    } else {
+      result = Either.Right(null)
+    }
+
+    return result
   }
   
   //:: (String, String) -> Either String null -> Either String String 
   const hasCorrectNumberOfInputs = (x, cmd) => (_) => {
-    const args = cmd.match(regx[0])
-    const xs = x.match(regx[1])
+    // first check if it has ':args'
+    let args = cmd.match(regx[1])
+    let xs
     let i = 0  
+    
+    if (args === null) {
+      args = cmd.match(regx[2])
+      xs = [x]
+    } else {
+      xs = x.match(regx[3])
+    }
+    
     return (pred[1](xs, args))
       ? Either.Left(err[1](cmd, args.length))
       : Either.Right(cmd.replace(regx[0], (match) => xs[i++]))
