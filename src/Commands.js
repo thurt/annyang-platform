@@ -3,6 +3,15 @@ const commands = (horizon) => (manualCommandEntry) => (channel) => {
   const h = require('snabbdom/h')
   const { Either, pluck } = require('fp-lib')
   
+  const getClientRecord = (name) => {
+    clients.find({ name }).fetch().defaultIfEmpty().subscribe(
+      (msg) => {
+        delete msg['id']
+        channel.push(Either.Right(JSON.stringify(msg)))
+      },
+      (err) => channel.push(Either.Left(`Error fetching client record ${name} -- ${err}`)))
+  }
+  
   const letters = horizon('letters')
   const clients = horizon('clients')
   
@@ -15,7 +24,7 @@ const commands = (horizon) => (manualCommandEntry) => (channel) => {
       else {
         console.log('received update', res)
         console.log(pluck('name')(res))
-        fuzzy_clients = fuzzyset(pluck('name')(res), false, 1)
+        fuzzy_clients = fuzzyset(pluck('name')(res))
         //fuzzy_addresses = fuzzyset(pluck('address')(res))
       }
     },
@@ -26,9 +35,11 @@ const commands = (horizon) => (manualCommandEntry) => (channel) => {
       const res = fuzzy_clients.get(name)
 
       if (res !== null) {
-        channel.push(Either.Right(`fuzzy client found ${res}`))
+        channel.push(Either.Right([pluck(1)(res).map(name => {
+          return h('button', { on: { click: [getClientRecord, name] } }, name)
+        })]))
       } else {
-        channel.push(Either.Left(`client ${name} not found by fuzzy`))
+        channel.push(Either.Left(`client ${name} not found`))
       }
     },
     'new client': () => {
@@ -57,7 +68,7 @@ const commands = (horizon) => (manualCommandEntry) => (channel) => {
     },
     [`what's nearby`]: () => {},
     'client address *addr': (addr) => {
-            
+      
     },
     'increase :letter': (letter) => {
       letters.find(letter.toLowerCase()).fetch().defaultIfEmpty().subscribe(
