@@ -40,8 +40,10 @@ global.annyang = annyang
 
 // Setup annyang command entry and manual command entry
 {
+  const fuzzyset = require('fuzzyset.js')
+  const myDatabaseActions = require('./DatabaseActions')(horizon)(fuzzyset)(channel)
   const myManualCommandEntry = require('./ManualCommandEntry')(annyang)(channel)
-  const myCommands = require('./Commands')(horizon)(myManualCommandEntry)(channel)
+  const myCommands = require('./Commands')(horizon)(myDatabaseActions)(myManualCommandEntry)(channel)
   annyang.addCommands(myCommands)
   global.myCommands = myCommands
 }
